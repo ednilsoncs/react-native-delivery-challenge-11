@@ -27,12 +27,27 @@ interface Food {
   formattedPrice: string;
 }
 
+interface RequestFavorito {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  thumbnail_url: string;
+}
+
 const Favorites: React.FC = () => {
   const [favorites, setFavorites] = useState<Food[]>([]);
 
   useEffect(() => {
     async function loadFavorites(): Promise<void> {
-      // Load favorite foods from api
+      const { data } = await api.get<RequestFavorito[]>('/favorites');
+      const formattedFavorites = data.map(order => {
+        return {
+          ...order,
+          formattedPrice: formatValue(order.price),
+        };
+      });
+      setFavorites(formattedFavorites);
     }
 
     loadFavorites();

@@ -73,34 +73,66 @@ const FoodDetails: React.FC = () => {
 
   useEffect(() => {
     async function loadFood(): Promise<void> {
-      // Load a specific food with extras based on routeParams id
+      const { data } = await api.get(`/foods/${routeParams.id}`);
+      setFood(data);
+      const extrasFormated = data.extras.map(extra => {
+        return {
+          ...extra,
+          quantity: 0,
+        };
+      });
+      setExtras(extrasFormated);
     }
 
     loadFood();
   }, [routeParams]);
 
   function handleIncrementExtra(id: number): void {
-    // Increment extra quantity
+    const extraIndex = extras.findIndex(extra => extra.id === id);
+    const extra = extras[extraIndex];
+    extra.quantity += 1;
+    const auxExtras = [...extras];
+
+    auxExtras[extraIndex] = extra;
+    setExtras(auxExtras);
   }
 
   function handleDecrementExtra(id: number): void {
-    // Decrement extra quantity
+    const extraIndex = extras.findIndex(extra => extra.id === id);
+    const extra = extras[extraIndex];
+    extra.quantity -= 1;
+    const auxExtras = [...extras];
+
+    auxExtras[extraIndex] = extra;
+    setExtras(auxExtras);
   }
 
   function handleIncrementFood(): void {
-    // Increment food quantity
+    setFoodQuantity(state => state + 1);
   }
 
   function handleDecrementFood(): void {
-    // Decrement food quantity
+    setFoodQuantity(state => {
+      if (state - 1 < 1) {
+        return state;
+      }
+
+      return state - 1;
+    });
   }
 
   const toggleFavorite = useCallback(() => {
-    // Toggle if food is favorite or not
-  }, [isFavorite, food]);
+    setIsFavorite(!isFavorite);
+  }, [isFavorite]);
 
   const cartTotal = useMemo(() => {
-    // Calculate cartTotal
+    const valorFood = Number(foodQuantity * food.price);
+    let valorExtra = 0;
+    extras.forEach(extra => {
+      valorExtra += extra.quantity * extra.value;
+    });
+
+    return formatValue(valorFood + valorExtra);
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
